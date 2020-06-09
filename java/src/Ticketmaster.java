@@ -312,20 +312,77 @@ public class Ticketmaster{
 		return input;
 	}//end readChoice
 	
-	public static void AddUser(Ticketmaster esql){//1
-	String fname = ""; 
-	String lname = ""; 
-	String email = ""; 
- 	String phone = ""; 
-	String password = ""; 
-	String query = ""; 
-	int rows_returned = 0; 
-
-	// First name 
-	System.out.print("Please enter your first name: "); 
-	fname = ReadUserInput().trim(); 
-	System.out.println("First name is: " + fname); 	
+	// METHOD CREATED OUTSIDE OF ASSIGNMENT SCOPE TO CHECK PHONE NUMBER VALIDITY
+	public static boolean isValidPhone(String phone_number) throws Exception {
+		// See if phone number contains letters and if check number of digits
+		if (phone_number.matches("[0-9]+") && phone_number.length() == 10){
+			return true; 
+		}
+		// Return false if letter/symbol is found or if there are not 10 digits
+		return false; 
 	}
+
+	public static void AddUser(Ticketmaster esql){//1
+	// Initializing row counter
+	number_rows_returned = 0; 
+	
+	try{
+		// Email: Specified to not exceed 30 chars (can edit this later)
+		String email = ""; 
+		while (email == "" || email.length() >= 30){
+			System.out.println("Please enter your email: "); 
+			email = in.readLine();  
+		}
+	
+		// First name: Specified to not exceed 30 chars
+		String fname = "";
+		while (fname == "" || fname.length() >= 30){
+			System.out.println("Please enter the user's first name: ");
+			fname = in.readLine(); 
+		}
+
+		// Last name: Specified to not exceed 30 chars
+		String lname = ""; 
+		while (lname == "" || lname.length() >= 30){
+			System.out.println("Please enter the user's last name: "); 
+			lname = in.readLine(); 
+		}
+		
+		// Phone number
+		String phone_number = ""; 
+		while (!isValidPhone(phone_number)) {
+			System.out.println("Please enter a valid phone number (0123456789): ");
+			phone_number = in.readLine(); 
+		}
+
+		// Password
+		String password = ""; 
+		System.out.println("Please enter a password: ");
+		password = in.readLine(); 
+
+		// Checking that email hasn't already been entered
+		try{ 
+			number_rows_returned = esql.executeQueryAndPrintResult(query);
+		} catch(SQLException e){
+			System.out.println("There was a mistake. Please try again.");
+			return;  
+		}
+		if (number_rows_returned > 0){
+			System.out.println("A user with email " + email + " has already created an account. Please register again.");
+			return; 
+		} else{
+			// No existing account contains the same email. Proceed to save this user info.
+			String query = String.format("INSERT INTO Users (email, fname, lname, phone_number, password) VALUES ('%s', '%s', '%s', '%s', '%s');",
+			email, fname, lname, phone_number, password); 
+		// Execute Query
+		esql.executeUpdate(query); 
+		System.out.println("Successfully added " + fname + " " + lname + "!\n\n"); 
+		}
+	} catch (Exception e){
+		System.err.println(e.getMessage()); 
+	}
+	} // END OF AddUser
+
 	
 	public static void AddBooking(Ticketmaster esql){//2
 		
