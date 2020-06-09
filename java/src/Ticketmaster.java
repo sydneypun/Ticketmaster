@@ -23,6 +23,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -312,134 +315,344 @@ public class Ticketmaster{
 		return input;
 	}//end readChoice
 	
-	// METHOD CREATED OUTSIDE OF ASSIGNMENT SCOPE TO CHECK PHONE NUMBER VALIDITY
 	public static boolean isValidPhone(String phone_number) throws Exception {
 		// See if phone number contains letters and if check number of digits
-		if (phone_number.matches("[0-9]+") && phone_number.length() == 10){
-			return true; 
+		long phone = Long.parseLong(phone_number);
+		long upper_limit = 1000000000 * 10;
+		if (phone < upper_limit && phone > 999999999) {
+			return true;
 		}
 		// Return false if letter/symbol is found or if there are not 10 digits
 		return false; 
 	}
-
+	
 	public static void AddUser(Ticketmaster esql){//1
-	// Initializing row counter
-	number_rows_returned = 0; 
-	
-	try{
-		// Email: Specified to not exceed 30 chars (can edit this later)
-		String email = ""; 
-		while (email == "" || email.length() >= 30){
-			System.out.println("Please enter your email: "); 
-			email = in.readLine();  
-		}
-	
-		// First name: Specified to not exceed 30 chars
-		String fname = "";
-		while (fname == "" || fname.length() >= 30){
-			System.out.println("Please enter the user's first name: ");
-			fname = in.readLine(); 
-		}
+		try {
+			// Get input
+			Scanner sc = new Scanner(System.in);
+			// Row counter 
+			int row_counter = 0; 
 
-		// Last name: Specified to not exceed 30 chars
-		String lname = ""; 
-		while (lname == "" || lname.length() >= 30){
-			System.out.println("Please enter the user's last name: "); 
-			lname = in.readLine(); 
-		}
-		
-		// Phone number
-		String phone_number = ""; 
-		while (!isValidPhone(phone_number)) {
-			System.out.println("Please enter a valid phone number (0123456789): ");
-			phone_number = in.readLine(); 
-		}
+			System.out.println("Enter email: ");
+			String email = sc.nextLine();
+			
+			System.out.println("Enter last name: ");
+			String lname = sc.nextLine();
+			
+			System.out.println("Enter first name: ");
+			String fname = sc.nextLine();
+			
+			System.out.println("Enter phone number (10 digits only): ");
+			String phone = sc.nextLine();
+			// Phone Number Validation 
+			if(!isValidPhone(phone)){
+				System.out.println("\t Please enter a valid phone number (0123456789): "); 
+				phone = sc.nextLine(); 
+			}
 
-		// Password
-		String password = ""; 
-		System.out.println("Please enter a password: ");
-		password = in.readLine(); 
+			System.out.println("Enter password: ");
+			String pwd = sc.nextLine();
+			
+			// Validating email as primary key
+			String query = ""; 
+			query = "SELECT * FROM Users WHERE email = \'" + email + "\'";
 
-		// Checking that email hasn't already been entered
-		try{ 
-			number_rows_returned = esql.executeQueryAndPrintResult(query);
-		} catch(SQLException e){
-			System.out.println("There was a mistake. Please try again.");
-			return;  
+			try{ // See if input email matches pre-existing emails in the DB. }
+			row_counter = esql.executeQueryAndPrintResult(query); 
+			}
+			catch(SQLException e){
+				System.out.println("Error! Please make another account."); 
+				return; 
+			}
+
+			if (row_counter > 0){
+				System.out.println("The email " + email + " already has a registered account. Please register again."); 
+				return; 
+			}else{
+				// If all is successful, add account to the DB. 
+				query = String.format("INSERT INTO Users (email, fname, lname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", 
+				email, fname, lname, phone, pwd);
+			}
+			// Execute Query
+			esql.executeUpdate(query);
+			System.out.println("Successfully added " + fname + " " + lname + "!\n\n");
+			
+			// Throw error message if DB backfires. 
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
 		}
-		if (number_rows_returned > 0){
-			System.out.println("A user with email " + email + " has already created an account. Please register again.");
-			return; 
-		} else{
-			// No existing account contains the same email. Proceed to save this user info.
-			String query = String.format("INSERT INTO Users (email, fname, lname, phone_number, password) VALUES ('%s', '%s', '%s', '%s', '%s');",
-			email, fname, lname, phone_number, password); 
-		// Execute Query
-		esql.executeUpdate(query); 
-		System.out.println("Successfully added " + fname + " " + lname + "!\n\n"); 
-		}
-	} catch (Exception e){
-		System.err.println(e.getMessage()); 
 	}
-	} // END OF AddUser
-
 	
 	public static void AddBooking(Ticketmaster esql){//2
+		// Get input
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter Booking ID: ");
+		String bid = sc.nextLine();
+		
+		System.out.println("Enter Booking date and time: ");
+		String bdatetime = sc.nextLine();
+		
+		System.out.println("Enter Number of seats booked: ");
+		String seats = sc.nextLine();
+		
+		System.out.println("Enter Show ID: ");
+		String sid = sc.nextLine();
+		
+		System.out.println("Enter User account email: ");
+		String email = sc.nextLine();
+		
+		// Execute Query
+		try {
+			String query = String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) "
+				+ "VALUES ('%s', '%s', '%s', '%s', '%s', '%s');", 
+				bid, "pending", bdatetime, seats, sid, email);
+			esql.executeUpdate(query);
+			System.out.println("Successfully added Booking ID: " + bid + " (Show ID: " + sid + ") for user: " + email + "!\n\n");
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+		}
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
+		// Add Showing of new Movie for an Existing Theater
+		Scanner sc = new Scanner(System.in);
 		
+		// Add Movie
+		System.out.println("Enter Movie ID: ");
+		String mvid = sc.nextLine();
+		
+		System.out.println("Enter Movie title: ");
+		String title = sc.nextLine();
+		
+		System.out.println("Enter Release date: ");
+		String rdate = sc.nextLine();
+		
+		System.out.println("Enter Release country: ");
+		String country = sc.nextLine();
+		
+		System.out.println("Enter description: ");
+		String description = sc.nextLine();
+		
+		System.out.println("Enter duration: ");
+		String duration = sc.nextLine();
+		
+		System.out.println("Enter Language code (ie en, de): ");
+		String lang = sc.nextLine();
+		
+		System.out.println("Enter genre: ");
+		String genre = sc.nextLine();
+		
+		// Execute Query
+		try {
+			String query = String.format("INSERT INTO Movies (mvid, title, rdate, country, description, duration, lang, genre) "
+				+ "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", 
+				mvid, title, rdate, country, description, duration, lang, genre);
+			esql.executeUpdate(query);
+			System.out.println("Successfully added Movie ID: " + mvid + "!\n\n");
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return;
+		}
+		
+		
+		// Add Show
+		System.out.println("Enter Show ID: ");
+		String sid = sc.nextLine();
+		
+		System.out.println("Enter Show date: ");
+		String sdate = sc.nextLine();
+		
+		System.out.println("Enter Start time: ");
+		String sttime = sc.nextLine();
+		
+		System.out.println("Enter End time: ");
+		String edtime = sc.nextLine();
+		
+		// Execute Query
+		try {
+			String query = String.format("INSERT INTO Shows (sid, mvid, sdate, sttime, edtime) VALUES ('%s', '%s', '%s', '%s', '%s');", 
+				sid, mvid, sdate, sttime, edtime);
+			esql.executeUpdate(query);
+			System.out.println("Successfully added Shows ID: " + sid + " (Movie ID: " + mvid + ")!\n\n");
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return;
+		}
 	}
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
+		// Set all bookings that have a status of pending to cancelled
+		String query = "SELECT B.status "
+					 + "FROM   Bookings B "
+					 + "WHERE  B.status = \'pending\'";
 		
+		try {
+			esql.executeQueryAndReturnResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter Show seat ID to be cancelled: ");
+		String oldSsid = sc.nextLine();
+		
+		System.out.println("Enter new Show seat ID: ");
+		String newSsid = sc.nextLine();
+		
+		// check if new seats are available and if same price, then replace
 	}
 	
 	public static void RemovePayment(Ticketmaster esql){//6
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter Booking ID: ");
+		String bid = sc.nextLine();
+
+		// set Booking status to cancelled and delete payment from database
 	}
 	
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
-		
+		// remove all Bookings with status of cancelled
 	}
 	
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter date: ");
+		String sdate = sc.nextLine();
+		
+		System.out.println("Enter Cinema ID: ");
+		String cid = sc.nextLine();
+
+		// Remove Shows on a Given Date at a specific Cinema
 	}
 	
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
-		//
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter Cinema ID: ");
+		String cid = sc.nextLine();
+		
+		System.out.println("Enter Show Movie ID: ");
+		String mvid = sc.nextLine();
+		
+		// all Theaters in a Cinema Playing a Given Show
+		String query = "SELECT T.tid, T.tname "
+					 + "FROM   Theaters T, Shows S "
+					 + "WHERE  T.cid = " + cid + " AND S.mvid = " + mvid;
+		try {
+			esql.executeQueryAndPrintResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 	
 	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10
-		//
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter Show date: ");
+		String sdate = sc.nextLine();
+		
+		System.out.println("Enter Start time: ");
+		String sttime = sc.nextLine();
+		
+		// all Shows that Start at a Given Time and Date
+		String query = "SELECT S.sid "
+					 + "FROM   Shows S "
+					 + "WHERE  S.sdate = " + sdate + " AND S.sttime = " + sttime;
+		try {
+			esql.executeQueryAndPrintResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
-		//
-		
+		// Movie Titles Containing love Released After 2010
+		String query = "SELECT M.title "
+					 + "FROM   Movies M "
+					 + "WHERE  M.rdate > \'2009-12-31\' AND M.title LIKE \'%Love%\'";	// %[L][o][v][e]%  maybe? idk lol
+		try {
+			esql.executeQueryAndPrintResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 
 	public static void ListUsersWithPendingBooking(Ticketmaster esql){//12
-		//
-		
+		// First Name, Last Name, and Email of Users with a Pending Booking
+		String query = "SELECT U.fname, U.lname, U.email "
+					 + "FROM   Users U, Bookings B "
+					 + "WHERE  B.status = \'pending\' AND U.email = B.email";
+		try {
+			esql.executeQueryAndPrintResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 
 	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
-		//
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter Movie ID: ");
+		String mvid = sc.nextLine();
+		
+		System.out.println("Enter Cinema ID: ");
+		String cid = sc.nextLine();
+		
+		System.out.println("Enter beginning date range: ");
+		String beginningDate = sc.nextLine();
+		
+		System.out.println("Enter ending date range: ");
+		String endingDate = sc.nextLine();
+		
+		// Title, Duration, Date, and Time of Shows Playing a Given Movie at a Given Cinema During a Date Range
+		String query = "SELECT M.title, M.duration, S.sdate, S.sttime "
+					 + "FROM   Movies M, Shows S, Cinemas C "
+					 + "WHERE  M.mvid  =" + mvid
+					 + "  AND  C.cid   =" + cid
+					 + "  AND  S.sdate >" + beginningDate
+					 + "  AND  S.sdate <" + endingDate;
+		try {
+			esql.executeQueryAndPrintResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
-		//
+		Scanner sc = new Scanner(System.in);
 		
+		System.out.println("Enter User email: ");
+		String email = sc.nextLine();
+		
+		// Movie Title, Show Date & Start Time, Theater Name, and Cinema Seat Number for all Bookings of a Given User
+		String query = "SELECT M.title, B.bdatetime, T.tname, C.sno "
+					 + "FROM   Bookings B, Movies M, Theaters T, CinemaSeats C "
+					 + "WHERE  B.email = \'" + email + "\'";
+		try {
+			esql.executeQueryAndPrintResult(query);
+		} catch(Exception e) {
+			System.out.println("Could not execute query and print result");
+			e.printStackTrace();
+			return;
+		}
 	}
 	
 }
