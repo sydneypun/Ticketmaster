@@ -313,7 +313,18 @@ public class Ticketmaster{
 	}//end readChoice
 	
 	public static void AddUser(Ticketmaster esql){//1
-		
+	String fname = ""; 
+	String lname = ""; 
+	String email = ""; 
+ 	String phone = ""; 
+	String password = ""; 
+	String query = ""; 
+	int rows_returned = 0; 
+
+	// First name 
+	System.out.print("Please enter your first name: "); 
+	fname = ReadUserInput().trim(); 
+	System.out.println("First name is: " + fname); 	
 	}
 	
 	public static void AddBooking(Ticketmaster esql){//2
