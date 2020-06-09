@@ -353,12 +353,13 @@ public class Ticketmaster{
 			System.out.println("Enter password: ");
 			String pwd = sc.nextLine();
 			
-			// Validating email as primary key
+			// VALIDATING EMAIL HERE! 
 			String query = ""; 
 			query = "SELECT * FROM Users WHERE email = \'" + email + "\'";
 
-			try{ // See if input email matches pre-existing emails in the DB. }
-			row_counter = esql.executeQueryAndPrintResult(query); 
+			try{ 
+				// See if input email matches pre-existing emails in the DB. 
+				row_counter = esql.executeQueryAndPrintResult(query); 
 			}
 			catch(SQLException e){
 				System.out.println("Error! Please make another account."); 
@@ -390,10 +391,13 @@ public class Ticketmaster{
 		System.out.println("Enter Booking ID: ");
 		String bid = sc.nextLine();
 		
-		System.out.println("Enter Booking date and time: ");
+		System.out.println("Enter the booking status (paid, cancelled, pending): "); 
+		String status = sc.nextLine(); 
+
+		System.out.println("Enter Booking date (mm/dd/yy) and time (hh:mm:ss AM/PM): ");
 		String bdatetime = sc.nextLine();
 		
-		System.out.println("Enter Number of seats booked: ");
+		System.out.println("Enter number of seats booked: ");
 		String seats = sc.nextLine();
 		
 		System.out.println("Enter Show ID: ");
@@ -402,16 +406,63 @@ public class Ticketmaster{
 		System.out.println("Enter User account email: ");
 		String email = sc.nextLine();
 		
-		// Execute Query
-		try {
-			String query = String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) "
+		// BOOKING CONSTRAINTS ADDED HERE!  
+		String[] queries = new String[3]; 
+		String query = ""; 
+		int row_counter = 0; 
+		int error_counter = 0; 
+
+		queries[0] = "SELECT * FROM Bookings WHERE bid = " + bid; 
+		queries[1] = "SELECT * FROM Shows WHERE sid = " + sid; 
+		queries[2] = "SELECT * FROM Users WHERE email = \'" + email + "\'"; 
+		
+		for (int i=0; i<3; i++){
+			try{
+				row_counter = esql.executeQueryAndPrintResult(queries[i]); 
+			} catch(SQLException e){
+				System.out.println("An error has occurred. Please re-enter your information."); 
+				return; 
+			}
+			// INCREMENTING THE NUMBER OF ERRORS BY CASE
+			switch (i){
+				case 0: {
+					if (row_counter > 0){
+						System.out.println("Error, booking id: " + bid + " exists in our system.");
+						error_counter++; 
+					}
+					break; 
+				}
+				case 1: {
+					if (row_counter == 0){
+						System.out.println("Error, show with sid: " + sid + " does not exist in our system."); 
+						error_counter++; 
+					}
+					break; 
+				}
+				case 2: {
+					if (row_counter == 0){
+						System.out.println("Error, user with email: " + email + " does not exist in our system."); 
+						error_counter++; 
+					}
+					break; 
+				}
+				}
+			}
+			if (error_counter > 0){
+			System.out.println("Please fix all of the errors and try again."); 
+			return; 	
+			} else{
+				query = String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) "
 				+ "VALUES ('%s', '%s', '%s', '%s', '%s', '%s');", 
-				bid, "pending", bdatetime, seats, sid, email);
-			esql.executeUpdate(query);
-			System.out.println("Successfully added Booking ID: " + bid + " (Show ID: " + sid + ") for user: " + email + "!\n\n");
-		} catch (Exception e) {
+				bid, status , bdatetime, seats, sid, email);
+			// Execute Query
+			try {
+				esql.executeUpdate(query);
+				System.out.println("Successfully added Booking ID: " + bid + " (Show ID: " + sid + ") for user: " + email + "!\n\n");
+			} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
+	}
 	}
 	
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
