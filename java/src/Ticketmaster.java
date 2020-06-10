@@ -585,6 +585,15 @@ public class Ticketmaster{
 			System.err.println(e.getMessage());
 			return;
 		}
+		
+		try {
+			String query = "DELETE FROM Payments P USING Bookings WHERE P.bid = " + bid + ";";
+			esql.executeUpdate(query);
+			System.out.println("Successfully cancelled all pending payments.");
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return;
+		}
 	}
 	
 	public static void ClearCancelledBookings(Ticketmaster esql) {//7
