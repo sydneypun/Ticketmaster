@@ -326,11 +326,13 @@ public class Ticketmaster{
 		return false; 
 	}
 	
-	public static void AddUser(Ticketmaster esql) {//1
+	public static void AddUser(Ticketmaster esql){//1
 		try {
 			// Get input
 			Scanner sc = new Scanner(System.in);
-			
+			// Row counter 
+			int row_counter = 0; 
+
 			System.out.println("Enter email: ");
 			String email = sc.nextLine();
 			
@@ -342,31 +344,60 @@ public class Ticketmaster{
 			
 			System.out.println("Enter phone number (10 digits only): ");
 			String phone = sc.nextLine();
+			// Phone Number Validation 
+			if(!isValidPhone(phone)){
+				System.out.println("\t Please enter a valid phone number (0123456789): "); 
+				phone = sc.nextLine(); 
+			}
 
 			System.out.println("Enter password: ");
 			String pwd = sc.nextLine();
 			
-			// Execute Query
-			String query = String.format("INSERT INTO Users (email, fname, lname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", 
+			// VALIDATING EMAIL HERE! 
+			String query = ""; 
+			query = "SELECT * FROM Users WHERE email = \'" + email + "\'";
+
+			try{ 
+				// See if input email matches pre-existing emails in the DB. 
+				row_counter = esql.executeQueryAndPrintResult(query); 
+			}
+			catch(SQLException e){
+				System.out.println("Error! Please make another account."); 
+				return; 
+			}
+
+			if (row_counter > 0){
+				System.out.println("The email " + email + " already has a registered account. Please register again."); 
+				return; 
+			}else{
+				// If all is successful, add account to the DB. 
+				query = String.format("INSERT INTO Users (email, fname, lname, phone, pwd) VALUES ('%s', '%s', '%s', '%s', '%s');", 
 				email, fname, lname, phone, pwd);
+			}
+			// Execute Query
 			esql.executeUpdate(query);
 			System.out.println("Successfully added " + fname + " " + lname + "!\n\n");
+			
+			// Throw error message if DB backfires. 
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
 	
-	public static void AddBooking(Ticketmaster esql) {//2
+	public static void AddBooking(Ticketmaster esql){//2
 		// Get input
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Enter Booking ID: ");
 		String bid = sc.nextLine();
 		
-		System.out.println("Enter Booking date and time: ");
+		System.out.println("Enter the booking status (paid, cancelled, pending): "); 
+		String status = sc.nextLine(); 
+
+		System.out.println("Enter Booking date (mm/dd/yy) and time (hh:mm:ss AM/PM): ");
 		String bdatetime = sc.nextLine();
 		
-		System.out.println("Enter Number of seats booked: ");
+		System.out.println("Enter number of seats booked: ");
 		String seats = sc.nextLine();
 		
 		System.out.println("Enter Show ID: ");
@@ -375,23 +406,104 @@ public class Ticketmaster{
 		System.out.println("Enter User account email: ");
 		String email = sc.nextLine();
 		
-		// Execute Query
-		try {
-			String query = String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) "
+		// BOOKING CONSTRAINTS ADDED HERE!  
+		String[] queries = new String[3]; 
+		String query = ""; 
+		int row_counter = 0; 
+		int error_counter = 0; 
+
+		queries[0] = "SELECT * FROM Bookings WHERE bid = " + bid; 
+		queries[1] = "SELECT * FROM Shows WHERE sid = " + sid; 
+		queries[2] = "SELECT * FROM Users WHERE email = \'" + email + "\'"; 
+		
+		for (int i=0; i<3; i++){
+			try{
+				row_counter = esql.executeQueryAndPrintResult(queries[i]); 
+			} catch(SQLException e){
+				System.out.println("An error has occurred. Please re-enter your information."); 
+				return; 
+			}
+			// INCREMENTING THE NUMBER OF ERRORS BY CASE
+			switch (i){
+				case 0: {
+					if (row_counter > 0){
+						System.out.println("Error, booking id: " + bid + " exists in our system.");
+						error_counter++; 
+					}
+					break; 
+				}
+				case 1: {
+					if (row_counter == 0){
+						System.out.println("Error, show with sid: " + sid + " does not exist in our system."); 
+						error_counter++; 
+					}
+					break; 
+				}
+				case 2: {
+					if (row_counter == 0){
+						System.out.println("Error, user with email: " + email + " does not exist in our system."); 
+						error_counter++; 
+					}
+					break; 
+				}
+				}
+			}
+			if (error_counter > 0){
+			System.out.println("Please fix all of the errors and try again."); 
+			return; 	
+			} else{
+				query = String.format("INSERT INTO Bookings (bid, status, bdatetime, seats, sid, email) "
 				+ "VALUES ('%s', '%s', '%s', '%s', '%s', '%s');", 
-				bid, "pending", bdatetime, seats, sid, email);
-			esql.executeUpdate(query);
-			System.out.println("Successfully added Booking ID: " + bid + " (Show ID: " + sid + ") for user: " + email + "!\n\n");
-		} catch (Exception e) {
+				bid, status , bdatetime, seats, sid, email);
+			// Execute Query
+			try {
+				esql.executeUpdate(query);
+				System.out.println("Successfully added Booking ID: " + bid + " (Show ID: " + sid + ") for user: " + email + "!\n\n");
+			} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
+	}
 	
-	public static void AddMovieShowingToTheater(Ticketmaster esql) {//3
+	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
 		// Add Showing of new Movie for an Existing Theater
 		Scanner sc = new Scanner(System.in);
 		
-		// Add Movie
+		// Verifying from DB before adding movie information
+		// Theater ID
+		String tid = "";
+		// Storing quries 
+		String queries1= ""; 
+		String queries2 = ""; 
+		String queries3 = ""; 
+		// Finalized query
+		String query = ""; 
+		// Row counter for verification 
+		int row_counter = 0; 
+
+		System.out.println("Please enter the theater ID: "); 
+		tid = sc.nextLine(); 
+
+		query = "SELECT * FROM Theaters WHERE tid = " + tid; 
+
+		try{ 
+			// Check if theater exists
+			row_counter = esql.executeQueryAndPrintResult(query); 
+		} catch(SQLException e){
+			System.out.println("There is an error in processing the info to the DB. Please try again.");
+			return; 
+		}
+		// TID exists 
+		if (row_counter > 0){
+			System.out.println("Theater ID " + tid + " exists."); 
+		}
+		// TID does NOT exist 
+		else if (row_counter == 0){
+			System.out.println("Error: Theater ID " + tid + "does NOT exist."); 
+			return; 
+		}
+
+		// Proceed to add Movie
 		System.out.println("Enter Movie ID: ");
 		String mvid = sc.nextLine();
 		
@@ -418,16 +530,15 @@ public class Ticketmaster{
 		
 		// Execute Query
 		try {
-			String query = String.format("INSERT INTO Movies (mvid, title, rdate, country, description, duration, lang, genre) "
+			queries1 = String.format("INSERT INTO Movies (mvid, title, rdate, country, description, duration, lang, genre) "
 				+ "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", 
 				mvid, title, rdate, country, description, duration, lang, genre);
-			esql.executeUpdate(query);
+			esql.executeUpdate(queries1);
 			System.out.println("Successfully added Movie ID: " + mvid + "!\n\n");
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			return;
 		}
-		
 		
 		// Add Show
 		System.out.println("Enter Show ID: ");
@@ -444,72 +555,55 @@ public class Ticketmaster{
 		
 		// Execute Query
 		try {
-			String query = String.format("INSERT INTO Shows (sid, mvid, sdate, sttime, edtime) VALUES ('%s', '%s', '%s', '%s', '%s');", 
+			 queries2 = String.format("INSERT INTO Shows (sid, mvid, sdate, sttime, edtime) VALUES ('%s', '%s', '%s', '%s', '%s');", 
 				sid, mvid, sdate, sttime, edtime);
-			esql.executeUpdate(query);
+			esql.executeUpdate(queries2);
 			System.out.println("Successfully added Shows ID: " + sid + " (Movie ID: " + mvid + ")!\n\n");
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			return;
 		}
 		
-		
-		// Add Plays
-		System.out.println("Enter Theater ID: ");
-		String tid = sc.nextLine();
-		
-		// Execute Query
+		// INSERTING INTO PLAYS
 		try {
-			String query = String.format("INSERT INTO Plays (sid, tid) VALUES ('%s', '%s');", sid, tid);
-			esql.executeUpdate(query);
-			System.out.println("Successfully added into Plays (Shows ID: " + sid + ", Theater ID: " + tid + ")!\n\n");
-		} catch (Exception e) {
+			queries3 = String.format("INSERT INTO Plays (sid, tid) VALUES ('%s', '%s');", sid, tid); 
+			esql.executeUpdate(queries3); 
+			System.out.println("Successfully added Play with show " + sid + " and Theater ID " + tid + ")!\n\n"); 
+		} catch(Exception e) {
 			System.err.println(e.getMessage());
 			return;
 		}
 	}
 	
-	public static void CancelPendingBookings(Ticketmaster esql) {//4
-		// Set all bookings that have a status of pending to cancelled
-		// try {
-		// 	String query = "UPDATE Bookings SET status = \'cancelled\' WHERE status = \'pending\';";
-		// 	esql.executeUpdate(query);
-		// 	System.out.println("Successfully cancelled all pending bookings.");
-		// } catch (Exception e) {
-		// 	System.err.println(e.getMessage());
-		// 	return;
-		// }
-		
+	public static void CancelPendingBookings(Ticketmaster esql){//4
 		int bid = -1;
-        List<List<String>> result = new ArrayList<List<String>>();
+        List<List<String>> result = new ArrayList<List<String>>(); 
 
-        String get_status_query = "SELECT bid FROM Bookings WHERE status = \'pending\'";
+        String get_status_query = "Select bid FROM Bookings WHERE status = \'Pending\'";
         //get list of bookings that have pending status
-        try {
+        try{
              result = esql.executeQueryAndReturnResult(get_status_query);
              System.out.println(Arrays.deepToString(result.toArray()));
-        } catch (SQLException e) {
+        }catch (Exception e){
             System.out.println(e.getMessage());
             return;
         }
         // Then loop through the result and update those entries with the same bid
-        for (int i = 0; i < result.size(); ++i) {
+        for(int i = 0; i < result.size(); ++i){
             // Parse bid string to int
             bid = Integer.parseInt(result.get(i).get(0));
-            String new_query = "UPDATE Bookings SET status = \'cancelled\' WHERE bid = " + bid;
-            try {
+            String new_query = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+            try{
                 esql.executeUpdate(new_query);
-            } catch (SQLException e) {
-                System.out.println("Error updating Booking entry with bid " + bid + ". Please try again later.");
+            }catch (SQLException e){
+                System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
                 return;
             }
         }
-		System.out.println("Successfully cancelled all pending bookings.");
-		
+        System.out.println("Successfully cancelled all pending payments.");
 	}
 	
-	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception {//5
-		// Check if new seats are available and if same price, then replace
+	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
 		Scanner sc = new Scanner(System.in);
 		List<List<String>> result = new ArrayList<List<String>>(); 
 		
@@ -518,9 +612,9 @@ public class Ticketmaster{
 		String bid = sc.nextLine(); 
 
 		// Output seats in accordance to booking ID given
-		String seat_query = "SELECT ssid FROM ShowSeats WHERE bid = " + bid + ";"; 
+		String seat_query = "SELECT ssid FROM ShowSeats WHERE bid = " + bid; 
 		System.out.println("Seats available for change are: "); 
-		try {
+		try{
 			esql.executeQueryAndPrintResult(seat_query);
 		} catch(SQLException e){
 			System.out.println(e.getMessage());
@@ -535,18 +629,18 @@ public class Ticketmaster{
 		" INTERSECT SELECT s1.ssid FROM ShowSeats s1 WHERE s1.price = (SELECT s2.price FROM ShowSeats s2 WHERE s2.ssid = " + ssid + ")" +
 		" INTERSECT SELECT s1.ssid FROM ShowSeats s1, Plays p1 WHERE s1.sid = p1.sid AND p1.tid = (SELECT p2.tid FROM ShowSeats s2, Plays p2 WHERE s2.sid = p2.sid AND s2.ssid = " + ssid + ")";
 
-		try {
+		try{
             result = esql.executeQueryAndReturnResult(available_seats_query);
-        } catch (SQLException e){
+        }catch (Exception e){
 			System.err.println(e.getMessage());
 			return;
         }
 
         // Print seats or error if no seats are available
-        if (result.size() == 0) {
+        if(result.size() == 0){
             System.out.println("Sorry, there are no seats available to be changed to.");
             return;
-        } else {
+        }else{
             System.out.print("Here are the seats that are still available at the same price: ");
             for(int i = 0; i < result.size(); ++i){
                 System.out.print(result.get(i).get(0) + " ");
@@ -560,38 +654,58 @@ public class Ticketmaster{
         // Update chosen seats and set old seat booking to null
         String remove_old_booking = "UPDATE ShowSeats SET bid = NULL WHERE ssid = " + ssid;
         String add_new_booking = "UPDATE ShowSeats SET bid = " + bid + " WHERE ssid = " + new_ssid;
-        try {
+        try{
             esql.executeUpdate(remove_old_booking);
             esql.executeUpdate(add_new_booking);
-            System.out.println("Booking has been successfully updated! :)");
-        } catch (SQLException e) {
-            System.out.println("Error updating Booking entry with bid " + bid + ". Please try again later.");
+            System.out.println("Booking has been successfully updated!");
+        }catch (SQLException e){
+            System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
             return;
         }
-	}
+    }
 	
-	public static void RemovePayment(Ticketmaster esql) {//6
+	public static void RemovePayment(Ticketmaster esql){//6
 		Scanner sc = new Scanner(System.in);
-		
-		System.out.println("Enter Booking ID: ");
-		String bid = sc.nextLine();
-		
-		// set Booking status to cancelled and delete payment from database
-		try {
-			String query = "UPDATE Bookings SET status = \'cancelled\' WHERE bid = " + bid + ";";
-			esql.executeUpdate(query);
-			System.out.println("Successfully cancelled all pending bookings.");
-		} catch (Exception e) {
+		List<List<String>> result = new ArrayList<List<String>>(); 
+		String bid = ""; 
+
+		// Grab pid for payment that will be cancelled
+		System.out.println("Please enter the pid of the payment to be cancelled: "); 
+		String pid = sc.nextLine(); 
+
+		// Grab the booking for the payment
+		String booking_query = "SELECT bid from PAYMENTS WHERE pid = " + pid; 
+		try{
+			result = esql.executeQueryAndReturnResult(booking_query); 
+			bid = result.get(0).get(0); 
+			System.out.println("Booking corresponding pid " + pid + " found: " + bid); 
+		}catch (Exception e){
 			System.err.println(e.getMessage());
 			return;
 		}
-	}
+
+		// set Booking status to cancelled and delete payment from database
+		String update_booking = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+        String delete_payment = "DELETE FROM Payments WHERE pid = " + pid;
+
+        try{
+            esql.executeUpdate(update_booking);
+            esql.executeUpdate(delete_payment);
+
+        }catch (SQLException e){
+            System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
+            return;
+		}
+		
+        System.out.println("Successfully deleted payment " + pid + ". Thank you!");
+    }
 	
-	public static void ClearCancelledBookings(Ticketmaster esql) {//7
+	
+	public static void ClearCancelledBookings(Ticketmaster esql){//7
 		// remove all Bookings with status of cancelled
 	}
 	
-	public static void RemoveShowsOnDate(Ticketmaster esql) {//8
+	public static void RemoveShowsOnDate(Ticketmaster esql){//8
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Enter date: ");
@@ -603,7 +717,7 @@ public class Ticketmaster{
 		// Remove Shows on a Given Date at a specific Cinema
 	}
 	
-	public static void ListTheatersPlayingShow(Ticketmaster esql) {//9
+	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Enter Cinema ID: ");
@@ -615,7 +729,7 @@ public class Ticketmaster{
 		// all Theaters in a Cinema Playing a Given Show
 		String query = "SELECT T.tid, T.tname "
 					 + "FROM   Theaters T, Shows S "
-					 + "WHERE  T.cid = " + cid + " AND S.mvid = " + mvid + ";";
+					 + "WHERE  T.cid = " + cid + " AND S.mvid = " + mvid;
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -625,7 +739,7 @@ public class Ticketmaster{
 		}
 	}
 	
-	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql) {//10
+	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Enter Show date: ");
@@ -637,7 +751,7 @@ public class Ticketmaster{
 		// all Shows that Start at a Given Time and Date
 		String query = "SELECT S.sid "
 					 + "FROM   Shows S "
-					 + "WHERE  S.sdate = " + sdate + " AND S.sttime = " + sttime + ";";
+					 + "WHERE  S.sdate = " + sdate + " AND S.sttime = " + sttime;
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -647,11 +761,11 @@ public class Ticketmaster{
 		}
 	}
 
-	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql) {//11
+	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
 		// Movie Titles Containing love Released After 2010
 		String query = "SELECT M.title "
 					 + "FROM   Movies M "
-					 + "WHERE  M.rdate > \'2009-12-31\' AND M.title LIKE \'%Love%\';";	// %[L][o][v][e]%  maybe? idk lol
+					 + "WHERE  M.rdate > \'2009-12-31\' AND M.title LIKE \'%Love%\'";	// %[L][o][v][e]%  maybe? idk lol
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -661,11 +775,11 @@ public class Ticketmaster{
 		}
 	}
 
-	public static void ListUsersWithPendingBooking(Ticketmaster esql) {//12
+	public static void ListUsersWithPendingBooking(Ticketmaster esql){//12
 		// First Name, Last Name, and Email of Users with a Pending Booking
 		String query = "SELECT U.fname, U.lname, U.email "
 					 + "FROM   Users U, Bookings B "
-					 + "WHERE  B.status = \'pending\' AND U.email = B.email;";
+					 + "WHERE  B.status = \'pending\' AND U.email = B.email";
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -675,7 +789,7 @@ public class Ticketmaster{
 		}
 	}
 
-	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql) {//13
+	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Enter Movie ID: ");
@@ -696,7 +810,7 @@ public class Ticketmaster{
 					 + "WHERE  M.mvid  =" + mvid
 					 + "  AND  C.cid   =" + cid
 					 + "  AND  S.sdate >" + beginningDate
-					 + "  AND  S.sdate <" + endingDate + ";";
+					 + "  AND  S.sdate <" + endingDate;
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -706,7 +820,7 @@ public class Ticketmaster{
 		}
 	}
 
-	public static void ListBookingInfoForUser(Ticketmaster esql) {//14
+	public static void ListBookingInfoForUser(Ticketmaster esql){//14
 		Scanner sc = new Scanner(System.in);
 		
 		System.out.println("Enter User email: ");
@@ -715,7 +829,7 @@ public class Ticketmaster{
 		// Movie Title, Show Date & Start Time, Theater Name, and Cinema Seat Number for all Bookings of a Given User
 		String query = "SELECT M.title, B.bdatetime, T.tname, C.sno "
 					 + "FROM   Bookings B, Movies M, Theaters T, CinemaSeats C "
-					 + "WHERE  B.email = \'" + email + "\';";
+					 + "WHERE  B.email = \'" + email + "\'";
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -724,4 +838,5 @@ public class Ticketmaster{
 			return;
 		}
 	}
+	
 }
