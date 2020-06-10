@@ -716,16 +716,38 @@ public class Ticketmaster{
 
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
 		Scanner sc = new Scanner(System.in);
+		String query = ""; 
+		String delete_query = ""; 
 
-		System.out.println("Enter date: ");
+		System.out.println("Enter date in the (mm/dd/yyyy) format: ");
 		String sdate = sc.nextLine();
 
 		System.out.println("Enter Cinema ID: ");
 		String cid = sc.nextLine();
 
-		// Remove Shows on a Given Date at a specific Cinema
+		// Display the deleted information
+		query = "SELECT * FROM Shows Where sdate = \'" + sdate + "\' AND sid IN (SELECT p.sid FROM Plays p, Theaters t WHERE p.tid = t.tid AND t.cid = " + cid + ")";
+        System.out.println("Delete all Shows on the date " + sdate + " in Cinema " + cid + ": ");
+	   
+		try{
+            esql.executeQueryAndPrintResult(query);
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+			return; 
+		}
+		
+		// Deleting the query
+	 	delete_query = "DELETE FROM Shows Where sdate = \'" + sdate + "\' AND sid IN (SELECT p.sid FROM Plays p, Theaters t WHERE p.tid = t.tid AND t.cid = " + cid + ")";
+        System.out.println("Deleting...");
+        try{
+            esql.executeUpdate(delete_query);
+            System.out.println("The query has been deleted.");
+        }catch (Exception e){
+			System.err.println(e.getMessage());
+			return; 
+        }
 	}
-
+	
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
 		Scanner sc = new Scanner(System.in);
 
