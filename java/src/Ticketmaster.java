@@ -701,6 +701,17 @@ public class Ticketmaster{
 
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
 		// remove all Bookings with status of cancelled
+		String delete_cancelled_query = " DELETE FROM Bookings WHERE status = \'cancelled\'"; 
+
+		try{
+			esql.executeUpdate(delete_cancelled_query); 
+			esql.executeQueryAndPrintResult("SELECT * FROM Bookings WHERE status = \'cancelled\'"); 
+		} catch(Exception e)
+		{
+			System.err.println(e.getMessage());
+			return; 
+		}
+		System.out.println("All cancelled bookings are sucessfully cleared!");
 	}
 
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
