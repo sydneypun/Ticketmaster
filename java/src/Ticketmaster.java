@@ -469,7 +469,41 @@ public class Ticketmaster{
 		// Add Showing of new Movie for an Existing Theater
 		Scanner sc = new Scanner(System.in);
 		
-		// Add Movie
+		// Verifying from DB before adding movie information
+		// Theater ID
+		String tid = "";
+		// Storing quries 
+		String queries1= ""; 
+		String queries2 = ""; 
+		String queries3 = ""; 
+		// Finalized query
+		String query = ""; 
+		// Row counter for verification 
+		int row_counter = 0; 
+
+		System.out.println("Please enter the theater ID: "); 
+		tid = sc.nextLine(); 
+
+		query = "SELECT * FROM Theaters WHERE tid = " + tid; 
+
+		try{ 
+			// Check if theater exists
+			row_counter = esql.executeQueryAndPrintResult(query); 
+		} catch(SQLException e){
+			System.out.println("There is an error in processing the info to the DB. Please try again.");
+			return; 
+		}
+		// TID exists 
+		if (row_counter > 0){
+			System.out.println("Theater ID " + tid + " exists."); 
+		}
+		// TID does NOT exist 
+		else if (row_counter == 0){
+			System.out.println("Error: Theater ID " + tid + "does NOT exist."); 
+			return; 
+		}
+
+		// Proceed to add Movie
 		System.out.println("Enter Movie ID: ");
 		String mvid = sc.nextLine();
 		
@@ -496,16 +530,15 @@ public class Ticketmaster{
 		
 		// Execute Query
 		try {
-			String query = String.format("INSERT INTO Movies (mvid, title, rdate, country, description, duration, lang, genre) "
+			queries1 = String.format("INSERT INTO Movies (mvid, title, rdate, country, description, duration, lang, genre) "
 				+ "VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');", 
 				mvid, title, rdate, country, description, duration, lang, genre);
-			esql.executeUpdate(query);
+			esql.executeUpdate(queries1);
 			System.out.println("Successfully added Movie ID: " + mvid + "!\n\n");
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			return;
 		}
-		
 		
 		// Add Show
 		System.out.println("Enter Show ID: ");
@@ -522,11 +555,21 @@ public class Ticketmaster{
 		
 		// Execute Query
 		try {
-			String query = String.format("INSERT INTO Shows (sid, mvid, sdate, sttime, edtime) VALUES ('%s', '%s', '%s', '%s', '%s');", 
+			 queries2 = String.format("INSERT INTO Shows (sid, mvid, sdate, sttime, edtime) VALUES ('%s', '%s', '%s', '%s', '%s');", 
 				sid, mvid, sdate, sttime, edtime);
-			esql.executeUpdate(query);
+			esql.executeUpdate(queries2);
 			System.out.println("Successfully added Shows ID: " + sid + " (Movie ID: " + mvid + ")!\n\n");
 		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return;
+		}
+		
+		// INSERTING INTO PLAYS
+		try {
+			queries3 = String.format("INSERT INTO Plays (sid, tid) VALUES ('%s', '%s');", sid, tid); 
+			esql.executeUpdate(queries3); 
+			System.out.println("Successfully added Play with show " + sid + " and Theater ID " + tid + ")!\n\n"); 
+		} catch(Exception e) {
 			System.err.println(e.getMessage());
 			return;
 		}
