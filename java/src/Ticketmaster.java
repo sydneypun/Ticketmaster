@@ -37,14 +37,14 @@ public class Ticketmaster{
 	//reference to physical database connection
 	private Connection _connection = null;
 	static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-	
+
 	public Ticketmaster(String dbname, String dbport, String user, String passwd) throws SQLException {
 		System.out.print("Connecting to database...");
 		try{
 			// constructs the connection URL
 			String url = "jdbc:postgresql://localhost:" + dbport + "/" + dbname;
 			System.out.println ("Connection URL: " + url + "\n");
-			
+
 			// obtain a physical connection
 	        this._connection = DriverManager.getConnection(url, user, passwd);
 	        System.out.println("Done");
@@ -54,7 +54,7 @@ public class Ticketmaster{
 	        System.exit(-1);
 		}
 	}
-	
+
 	/**
 	 * Method to execute an update SQL statement.  Update SQL instructions
 	 * includes CREATE, INSERT, UPDATE, DELETE, and DROP.
@@ -96,7 +96,7 @@ public class Ticketmaster{
 		ResultSetMetaData rsmd = rs.getMetaData ();
 		int numCol = rsmd.getColumnCount ();
 		int rowCount = 0;
-		
+
 		//iterates through the result set and output them to standard out.
 		boolean outputHeader = true;
 		while (rs.next()){
@@ -115,7 +115,7 @@ public class Ticketmaster{
 		stmt.close ();
 		return rowCount;
 	}
-	
+
 	/**
 	 * Method to execute an input query SQL instruction (i.e. SELECT).  This
 	 * method issues the query to the DBMS and returns the results as
@@ -128,10 +128,10 @@ public class Ticketmaster{
 	public List<List<String>> executeQueryAndReturnResult (String query) throws SQLException { 
 		//creates a statement object 
 		Statement stmt = this._connection.createStatement (); 
-		
+
 		//issues the query instruction 
 		ResultSet rs = stmt.executeQuery (query); 
-	 
+
 		/*
 		 * obtains the metadata object for the returned result set.  The metadata 
 		 * contains row and column info. 
@@ -139,7 +139,7 @@ public class Ticketmaster{
 		ResultSetMetaData rsmd = rs.getMetaData (); 
 		int numCol = rsmd.getColumnCount (); 
 		int rowCount = 0; 
-	 
+
 		//iterates through the result set and saves the data returned by the query. 
 		boolean outputHeader = false;
 		List<List<String>> result  = new ArrayList<List<String>>(); 
@@ -152,7 +152,7 @@ public class Ticketmaster{
 		stmt.close (); 
 		return result; 
 	}//end executeQueryAndReturnResult
-	
+
 	/**
 	 * Method to execute an input query SQL instruction (i.e. SELECT).  This
 	 * method issues the query to the DBMS and returns the number of results
@@ -177,7 +177,7 @@ public class Ticketmaster{
 		stmt.close ();
 		return rowCount;
 	}
-	
+
 	/**
 	 * Method to fetch the last value from sequence. This
 	 * method issues the query to the DBMS and returns the current 
@@ -187,10 +187,10 @@ public class Ticketmaster{
 	 * @return current value of a sequence
 	 * @throws java.sql.SQLException when failed to execute the query
 	 */
-	
+
 	public int getCurrSeqVal(String sequence) throws SQLException {
 		Statement stmt = this._connection.createStatement ();
-		
+
 		ResultSet rs = stmt.executeQuery (String.format("Select currval('%s')", sequence));
 		if (rs.next()) return rs.getInt(1);
 		return -1;
@@ -221,12 +221,12 @@ public class Ticketmaster{
 		            " <dbname> <port> <user>");
 			return;
 		}//end if
-		
+
 		Ticketmaster esql = null;
-		
+
 		try{
 			System.out.println("(1)");
-			
+
 			try {
 				Class.forName("org.postgresql.Driver");
 			}catch(Exception e){
@@ -235,14 +235,14 @@ public class Ticketmaster{
 				e.printStackTrace();
 				return;
 			}
-			
+
 			System.out.println("(2)");
 			String dbname = args[0];
 			String dbport = args[1];
 			String user = args[2];
-			
+
 			esql = new Ticketmaster (dbname, dbport, user, "");
-			
+
 			boolean keepon = true;
 			while(keepon){
 				System.out.println("MAIN MENU");
@@ -262,7 +262,7 @@ public class Ticketmaster{
 				System.out.println("13. List the Title, Duration, Date, and Time of Shows Playing a Given Movie at a Given Cinema During a Date Range");
 				System.out.println("14. List the Movie Title, Show Date & Start Time, Theater Name, and Cinema Seat Number for all Bookings of a Given User");
 				System.out.println("15. EXIT");
-				
+
 				/*
 				 * FOLLOW THE SPECIFICATION IN THE PROJECT DESCRIPTION
 				 */
@@ -314,7 +314,7 @@ public class Ticketmaster{
 		}while (true);
 		return input;
 	}//end readChoice
-	
+
 	public static boolean isValidPhone(String phone_number) throws Exception {
 		// See if phone number contains letters and if check number of digits
 		long phone = Long.parseLong(phone_number);
@@ -325,7 +325,7 @@ public class Ticketmaster{
 		// Return false if letter/symbol is found or if there are not 10 digits
 		return false; 
 	}
-	
+
 	public static void AddUser(Ticketmaster esql){//1
 		try {
 			// Get input
@@ -335,13 +335,13 @@ public class Ticketmaster{
 
 			System.out.println("Enter email: ");
 			String email = sc.nextLine();
-			
+
 			System.out.println("Enter last name: ");
 			String lname = sc.nextLine();
-			
+
 			System.out.println("Enter first name: ");
 			String fname = sc.nextLine();
-			
+
 			System.out.println("Enter phone number (10 digits only): ");
 			String phone = sc.nextLine();
 			// Phone Number Validation 
@@ -352,7 +352,7 @@ public class Ticketmaster{
 
 			System.out.println("Enter password: ");
 			String pwd = sc.nextLine();
-			
+
 			// VALIDATING EMAIL HERE! 
 			String query = ""; 
 			query = "SELECT * FROM Users WHERE email = \'" + email + "\'";
@@ -377,35 +377,35 @@ public class Ticketmaster{
 			// Execute Query
 			esql.executeUpdate(query);
 			System.out.println("Successfully added " + fname + " " + lname + "!\n\n");
-			
+
 			// Throw error message if DB backfires. 
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
-	
+
 	public static void AddBooking(Ticketmaster esql){//2
 		// Get input
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("Enter Booking ID: ");
 		String bid = sc.nextLine();
-		
+
 		System.out.println("Enter the booking status (paid, cancelled, pending): "); 
 		String status = sc.nextLine(); 
 
 		System.out.println("Enter Booking date (mm/dd/yy) and time (hh:mm:ss AM/PM): ");
 		String bdatetime = sc.nextLine();
-		
+
 		System.out.println("Enter number of seats booked: ");
 		String seats = sc.nextLine();
-		
+
 		System.out.println("Enter Show ID: ");
 		String sid = sc.nextLine();
-		
+
 		System.out.println("Enter User account email: ");
 		String email = sc.nextLine();
-		
+
 		// BOOKING CONSTRAINTS ADDED HERE!  
 		String[] queries = new String[3]; 
 		String query = ""; 
@@ -415,7 +415,7 @@ public class Ticketmaster{
 		queries[0] = "SELECT * FROM Bookings WHERE bid = " + bid; 
 		queries[1] = "SELECT * FROM Shows WHERE sid = " + sid; 
 		queries[2] = "SELECT * FROM Users WHERE email = \'" + email + "\'"; 
-		
+
 		for (int i=0; i<3; i++){
 			try{
 				row_counter = esql.executeQueryAndPrintResult(queries[i]); 
@@ -464,11 +464,11 @@ public class Ticketmaster{
 		}
 	}
 	}
-	
+
 	public static void AddMovieShowingToTheater(Ticketmaster esql){//3
 		// Add Showing of new Movie for an Existing Theater
 		Scanner sc = new Scanner(System.in);
-		
+
 		// Verifying from DB before adding movie information
 		// Theater ID
 		String tid = "";
@@ -506,28 +506,28 @@ public class Ticketmaster{
 		// Proceed to add Movie
 		System.out.println("Enter Movie ID: ");
 		String mvid = sc.nextLine();
-		
+
 		System.out.println("Enter Movie title: ");
 		String title = sc.nextLine();
-		
+
 		System.out.println("Enter Release date: ");
 		String rdate = sc.nextLine();
-		
+
 		System.out.println("Enter Release country: ");
 		String country = sc.nextLine();
-		
+
 		System.out.println("Enter description: ");
 		String description = sc.nextLine();
-		
+
 		System.out.println("Enter duration: ");
 		String duration = sc.nextLine();
-		
+
 		System.out.println("Enter Language code (ie en, de): ");
 		String lang = sc.nextLine();
-		
+
 		System.out.println("Enter genre: ");
 		String genre = sc.nextLine();
-		
+
 		// Execute Query
 		try {
 			queries1 = String.format("INSERT INTO Movies (mvid, title, rdate, country, description, duration, lang, genre) "
@@ -539,20 +539,20 @@ public class Ticketmaster{
 			System.err.println(e.getMessage());
 			return;
 		}
-		
+
 		// Add Show
 		System.out.println("Enter Show ID: ");
 		String sid = sc.nextLine();
-		
+
 		System.out.println("Enter Show date: ");
 		String sdate = sc.nextLine();
-		
+
 		System.out.println("Enter Start time: ");
 		String sttime = sc.nextLine();
-		
+
 		System.out.println("Enter End time: ");
 		String edtime = sc.nextLine();
-		
+
 		// Execute Query
 		try {
 			 queries2 = String.format("INSERT INTO Shows (sid, mvid, sdate, sttime, edtime) VALUES ('%s', '%s', '%s', '%s', '%s');", 
@@ -563,7 +563,7 @@ public class Ticketmaster{
 			System.err.println(e.getMessage());
 			return;
 		}
-		
+
 		// INSERTING INTO PLAYS
 		try {
 			queries3 = String.format("INSERT INTO Plays (sid, tid) VALUES ('%s', '%s');", sid, tid); 
@@ -574,7 +574,7 @@ public class Ticketmaster{
 			return;
 		}
 	}
-	
+
 	public static void CancelPendingBookings(Ticketmaster esql){//4
 		int bid = -1;
         List<List<String>> result = new ArrayList<List<String>>(); 
@@ -602,11 +602,11 @@ public class Ticketmaster{
         }
         System.out.println("Successfully cancelled all pending payments.");
 	}
-	
+
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
 		Scanner sc = new Scanner(System.in);
 		List<List<String>> result = new ArrayList<List<String>>(); 
-		
+
 		// Grab booking that will be edited
 		System.out.println("Please enter booking ID to be changed: "); 
 		String bid = sc.nextLine(); 
@@ -620,7 +620,7 @@ public class Ticketmaster{
 			System.out.println(e.getMessage());
             return;
 		}
-		
+
 		// Grabbing seats to be changed (OLD SSID)
 		System.out.println("Please enter the seats you would like to change: "); 
 		String ssid = sc.nextLine(); 
@@ -650,7 +650,7 @@ public class Ticketmaster{
         // Get seat to be changed to
         System.out.print("\nWhich seat would you like to change Seat " + ssid + " to?: ");
         String new_ssid = sc.nextLine(); 
-       
+
         // Update chosen seats and set old seat booking to null
         String remove_old_booking = "UPDATE ShowSeats SET bid = NULL WHERE ssid = " + ssid;
         String add_new_booking = "UPDATE ShowSeats SET bid = " + bid + " WHERE ssid = " + new_ssid;
@@ -663,7 +663,7 @@ public class Ticketmaster{
             return;
         }
     }
-	
+
 	public static void RemovePayment(Ticketmaster esql){//6
 		Scanner sc = new Scanner(System.in);
 		List<List<String>> result = new ArrayList<List<String>>(); 
@@ -696,36 +696,34 @@ public class Ticketmaster{
             System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
             return;
 		}
-		
         System.out.println("Successfully deleted payment " + pid + ". Thank you!");
     }
-	
-	
+
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
 		// remove all Bookings with status of cancelled
 	}
-	
+
 	public static void RemoveShowsOnDate(Ticketmaster esql){//8
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("Enter date: ");
 		String sdate = sc.nextLine();
-		
+
 		System.out.println("Enter Cinema ID: ");
 		String cid = sc.nextLine();
 
 		// Remove Shows on a Given Date at a specific Cinema
 	}
-	
+
 	public static void ListTheatersPlayingShow(Ticketmaster esql){//9
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("Enter Cinema ID: ");
 		String cid = sc.nextLine();
-		
+
 		System.out.println("Enter Show Movie ID: ");
 		String mvid = sc.nextLine();
-		
+
 		// all Theaters in a Cinema Playing a Given Show
 		String query = "SELECT T.tid, T.tname "
 					 + "FROM   Theaters T, Shows S "
@@ -738,16 +736,16 @@ public class Ticketmaster{
 			return;
 		}
 	}
-	
+
 	public static void ListShowsStartingOnTimeAndDate(Ticketmaster esql){//10
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("Enter Show date: ");
 		String sdate = sc.nextLine();
-		
+
 		System.out.println("Enter Start time: ");
 		String sttime = sc.nextLine();
-		
+
 		// all Shows that Start at a Given Time and Date
 		String query = "SELECT S.sid "
 					 + "FROM   Shows S "
@@ -791,19 +789,19 @@ public class Ticketmaster{
 
 	public static void ListMovieAndShowInfoAtCinemaInDateRange(Ticketmaster esql){//13
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("Enter Movie ID: ");
 		String mvid = sc.nextLine();
-		
+
 		System.out.println("Enter Cinema ID: ");
 		String cid = sc.nextLine();
-		
+
 		System.out.println("Enter beginning date range: ");
 		String beginningDate = sc.nextLine();
-		
+
 		System.out.println("Enter ending date range: ");
 		String endingDate = sc.nextLine();
-		
+
 		// Title, Duration, Date, and Time of Shows Playing a Given Movie at a Given Cinema During a Date Range
 		String query = "SELECT M.title, M.duration, S.sdate, S.sttime "
 					 + "FROM   Movies M, Shows S, Cinemas C "
@@ -822,10 +820,10 @@ public class Ticketmaster{
 
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
 		Scanner sc = new Scanner(System.in);
-		
+
 		System.out.println("Enter User email: ");
 		String email = sc.nextLine();
-		
+
 		// Movie Title, Show Date & Start Time, Theater Name, and Cinema Seat Number for all Bookings of a Given User
 		String query = "SELECT M.title, B.bdatetime, T.tname, C.sno "
 					 + "FROM   Bookings B, Movies M, Theaters T, CinemaSeats C "
@@ -838,5 +836,5 @@ public class Ticketmaster{
 			return;
 		}
 	}
-	
-}
+
+} 
