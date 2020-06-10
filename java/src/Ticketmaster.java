@@ -576,18 +576,31 @@ public class Ticketmaster{
 	}
 	
 	public static void CancelPendingBookings(Ticketmaster esql){//4
-		// Set all bookings that have a status of pending to cancelled
-		String query = "SELECT B.status "
-					 + "FROM   Bookings B "
-					 + "WHERE  B.status = \'pending\'";
-		
-		try {
-			esql.executeQueryAndReturnResult(query);
-		} catch(Exception e) {
-			System.out.println("Could not execute query and print result");
-			e.printStackTrace();
-			return;
-		}
+		int bid = -1;
+        List<List<String>> result = new ArrayList<List<String>>(); 
+
+        String get_status_query = "Select bid FROM Bookings WHERE status = \'Pending\'";
+        //get list of bookings that have pending status
+        try{
+             result = esql.executeQueryAndReturnResult(get_status_query);
+             System.out.println(Arrays.deepToString(result.toArray()));
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+            return;
+        }
+        // Then loop through the result and update those entries with the same bid
+        for(int i = 0; i < result.size(); ++i){
+            // Parse bid string to int
+            bid = Integer.parseInt(result.get(i).get(0));
+            String update_query = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+            try{
+                esql.executeUpdate(update_query);
+            }catch (SQLException e){
+                System.out.println("Error updating Booking entry with bid " + bid + ". Please try again later.");
+                return;
+            }
+        }
+        System.out.println("Successfully cancelled all pending payments.");
 	}
 	
 	public static void ChangeSeatsForBooking(Ticketmaster esql) throws Exception{//5
