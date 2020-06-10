@@ -579,7 +579,7 @@ public class Ticketmaster{
 		int bid = -1;
         List<List<String>> result = new ArrayList<List<String>>(); 
 
-        String get_status_query = "Select bid FROM Bookings WHERE status = \'Pending\'";
+        String get_status_query = "SELECT bid FROM Bookings WHERE status = \'pending\'";
         //get list of bookings that have pending status
         try{
              result = esql.executeQueryAndReturnResult(get_status_query);
