@@ -584,7 +584,7 @@ public class Ticketmaster{
         try{
              result = esql.executeQueryAndReturnResult(get_status_query);
              System.out.println(Arrays.deepToString(result.toArray()));
-        }catch (SQLException e){
+        }catch (Exception e){
             System.out.println(e.getMessage());
             return;
         }
@@ -596,7 +596,7 @@ public class Ticketmaster{
             try{
                 esql.executeUpdate(new_query);
             }catch (SQLException e){
-                System.out.println("Error updating Booking entry with bid " + bid + ". Please try again later.");
+                System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
                 return;
             }
         }
@@ -631,7 +631,7 @@ public class Ticketmaster{
 
 		try{
             result = esql.executeQueryAndReturnResult(available_seats_query);
-        }catch (SQLException e){
+        }catch (Exception e){
 			System.err.println(e.getMessage());
 			return;
         }
@@ -657,21 +657,49 @@ public class Ticketmaster{
         try{
             esql.executeUpdate(remove_old_booking);
             esql.executeUpdate(add_new_booking);
-            System.out.println("Booking has been successfully updated! :)");
+            System.out.println("Booking has been successfully updated!");
         }catch (SQLException e){
-            System.out.println("Error updating Booking entry with bid " + bid + ". Please try again later.");
+            System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
             return;
         }
     }
 	
 	public static void RemovePayment(Ticketmaster esql){//6
 		Scanner sc = new Scanner(System.in);
-		
-		System.out.println("Enter Booking ID: ");
-		String bid = sc.nextLine();
+		List<List<String>> result = new ArrayList<List<String>>(); 
+		String bid = ""; 
+
+		// Grab pid for payment that will be cancelled
+		System.out.println("Please enter the pid of the payment to be cancelled: "); 
+		String pid = sc.nextLine(); 
+
+		// Grab the booking for the payment
+		String booking_query = "SELECT bid from PAYMENTS WHERE pid = " + pid; 
+		try{
+			result = esql.executeQueryAndReturnResult(booking_query); 
+			bid = result.get(0).get(0); 
+			System.out.println("Booking corresponding pid " + pid + " found: " + bid); 
+		}catch (Exception e){
+			System.err.println(e.getMessage());
+			return;
+		}
 
 		// set Booking status to cancelled and delete payment from database
-	}
+		String update_booking = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+        String delete_payment = "DELETE FROM Payments WHERE pid = " + pid;
+
+        try{
+            esql.executeUpdate(update_booking);
+            esql.executeUpdate(delete_payment);
+
+        }catch (SQLException e){
+            System.out.println("Error updating Booking entry with bid " + bid + ". Please try again.");
+            return;
+		}
+		
+        System.out.println("Successfully deleted payment " + pid + ". Thank you!");
+    }
+	
 	
 	public static void ClearCancelledBookings(Ticketmaster esql){//7
 		// remove all Bookings with status of cancelled
