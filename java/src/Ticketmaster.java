@@ -592,9 +592,9 @@ public class Ticketmaster{
         for(int i = 0; i < result.size(); ++i){
             // Parse bid string to int
             bid = Integer.parseInt(result.get(i).get(0));
-            String update_query = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+            String new_query = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
             try{
-                esql.executeUpdate(update_query);
+                esql.executeUpdate(new_query);
             }catch (SQLException e){
                 System.out.println("Error updating Booking entry with bid " + bid + ". Please try again later.");
                 return;
