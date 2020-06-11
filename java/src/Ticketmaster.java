@@ -794,9 +794,9 @@ public class Ticketmaster{
 
 	public static void ListMovieTitlesContainingLoveReleasedAfter2010(Ticketmaster esql){//11
 		// Movie Titles Containing love Released After 2010
-		String query = "SELECT M.title "
-					 + "FROM   Movies M "
-					 + "WHERE  M.rdate > \'2009-12-31\' AND M.title LIKE \'%Love%\'";	// %[L][o][v][e]%  maybe? idk lol
+		String query = "SELECT title FROM Movies WHERE title ~* 'love' AND (SELECT EXTRACT(YEAR FROM rdate) > 2010)";
+		System.out.println("Movies with titles containing 'love' released after 2010: ");
+		
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
@@ -853,21 +853,39 @@ public class Ticketmaster{
 
 	public static void ListBookingInfoForUser(Ticketmaster esql){//14
 		Scanner sc = new Scanner(System.in);
+		int row_counter = 0; 
 
 		System.out.println("Enter User email: ");
 		String email = sc.nextLine();
 
+		String query = "SELECT * FROM Bookings WHERE email = \'" + email + "\'";
+
+		// Checking to see if the user exists. 
+        try { 
+            row_counter = esql.executeQueryAndPrintResult(query);
+        }catch (SQLException e) {
+            System.out.println("We did an oopsie on our end. Please try again later.");
+            return;
+        }
+
+        if (row_counter > 0){
+            System.out.println("User with the email " + email + " exists.");
+        }
+        else { // row_counter = 0
+            System.out.println("Error: User with the email " + email + " does not exist.");
+            return;
+		}
+		
 		// Movie Title, Show Date & Start Time, Theater Name, and Cinema Seat Number for all Bookings of a Given User
-		String query = "SELECT M.title, B.bdatetime, T.tname, C.sno "
+		String updated_query = "SELECT M.title, B.bdatetime, T.tname, C.sno "
 					 + "FROM   Bookings B, Movies M, Theaters T, CinemaSeats C "
 					 + "WHERE  B.email = \'" + email + "\'";
 		try {
-			esql.executeQueryAndPrintResult(query);
+			esql.executeQueryAndPrintResult(updated_query);
 		} catch(Exception e) {
 			System.out.println("Could not execute query and print result");
 			e.printStackTrace();
 			return;
 		}
 	}
-
 } 
