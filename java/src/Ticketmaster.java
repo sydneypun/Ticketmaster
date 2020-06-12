@@ -788,7 +788,8 @@ public class Ticketmaster{
 		// all Shows that Start at a Given Time and Date
 		String query = "SELECT S.sid "
 					 + "FROM   Shows S "
-					 + "WHERE  S.sdate = " + sdate + " AND S.sttime = " + sttime;
+					 + "WHERE  S.sdate  = (CAST(\'" + sdate  + "\' AS DATE)) "
+					 + "  AND  S.sttime = (CAST(\'" + sttime + "\' AS TIME));";
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
