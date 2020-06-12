@@ -1,5 +1,4 @@
 # Ticketmaster
-### Database Management Systems Project
 ## Team Potato Members: 
 ###### Thi Nguyen, 862051496
 ###### Sydney Pun, 862053259
