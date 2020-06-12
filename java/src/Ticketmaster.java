@@ -618,7 +618,14 @@ public class Ticketmaster{
 		String bid = sc.nextLine(); 
 
 		// Output seats in accordance to booking ID given
-		String seat_query = "SELECT ssid FROM ShowSeats WHERE bid = " + bid; 
+		// String seat_query = "SELECT ssid FROM ShowSeats WHERE bid = " + bid;
+		String seat_query = "SELECT DISTINCT SS.ssid "
+		                  + "FROM   Bookings B, Shows S, Theaters T, CinemaSeats C, Plays P, ShowSeats SS "
+		                  + "WHERE  B.bid = " + bid
+		                  + "  AND  B.sid = S.sid "
+		                  + "  AND  P.sid = S.sid AND P.tid = T.tid "
+						  + "  AND  T.tid = C.tid AND C.csid = SS.csid;";
+		
 		System.out.println("Seats available for change are: "); 
 		try{
 			esql.executeQueryAndPrintResult(seat_query);
