@@ -598,7 +598,7 @@ public class Ticketmaster{
         for(int i = 0; i < result.size(); ++i){
             // Parse bid string to int
             bid = Integer.parseInt(result.get(i).get(0));
-            String new_query = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+            String new_query = "UPDATE Bookings SET status = \'cancelled\' WHERE bid = " + bid;
             try{
                 esql.executeUpdate(new_query);
             }catch (SQLException e){
@@ -691,7 +691,7 @@ public class Ticketmaster{
 		}
 
 		// set Booking status to cancelled and delete payment from database
-		String update_booking = "UPDATE Bookings SET status = \'Cancelled\' WHERE bid = " + bid;
+		String update_booking = "UPDATE Bookings SET status = \'cancelled\' WHERE bid = " + bid;
         String delete_payment = "DELETE FROM Payments WHERE pid = " + pid;
 
         try{
@@ -846,8 +846,10 @@ public class Ticketmaster{
 					 + "FROM   Movies M, Shows S, Cinemas C "
 					 + "WHERE  M.mvid  =" + mvid
 					 + "  AND  C.cid   =" + cid
-					 + "  AND  S.sdate >" + beginningDate
-					 + "  AND  S.sdate <" + endingDate;
+					 + "  AND  (  S.sdate = (CAST(\'" + beginningDate + "\' AS DATE)) "
+					 + "       OR S.sdate > (CAST(\'" + beginningDate + "\' AS DATE)) ) "
+					 + "  AND  (  S.sdate < (CAST(\'" + endingDate    + "\' AS DATE))"
+					 + "       OR S.sdate = (CAST(\'" + endingDate    + "\' AS DATE)) );";
 		try {
 			esql.executeQueryAndPrintResult(query);
 		} catch(Exception e) {
