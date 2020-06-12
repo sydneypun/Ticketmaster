@@ -317,7 +317,13 @@ public class Ticketmaster{
 
 	public static boolean isValidPhone(String phone_number) throws Exception {
 		// See if phone number contains letters and if check number of digits
-		long phone = Long.parseLong(phone_number);
+		long phone;
+		try {
+			phone = Long.parseLong(phone_number);
+		} catch (Exception e) {
+			return false;
+		}
+		
 		long upper_limit = 1000000000 * 10;
 		if (phone < upper_limit && phone > 999999999) {
 			return true;
@@ -857,29 +863,51 @@ public class Ticketmaster{
 
 		System.out.println("Enter User email: ");
 		String email = sc.nextLine();
-
+		
+		// Checking to see if the user exists.
+		try {
+			String q = "SELECT * FROM Users WHERE email = \'" + email + "\';";
+			row_counter = esql.executeQueryAndPrintResult(q);
+		} catch (SQLException e) {
+			System.out.println("We did an oopsie on our end. Please try again later.");
+			e.printStackTrace();
+			return;
+		}
+		
+        if (row_counter > 0){
+            System.out.println("User with the email " + email + " exists.\n");
+        }
+        else { // row_counter = 0
+            System.out.println("User with the email " + email + " does not exist.");
+            return;
+		}
+		
+		// Checking to see if the user has bookings.
+		row_counter = 0;
 		String query = "SELECT * FROM Bookings WHERE email = \'" + email + "\'";
-
-		// Checking to see if the user exists. 
-        try { 
+		
+        try {
             row_counter = esql.executeQueryAndPrintResult(query);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             System.out.println("We did an oopsie on our end. Please try again later.");
             return;
         }
-
+		
         if (row_counter > 0){
-            System.out.println("User with the email " + email + " exists.");
+            System.out.println("User with the email " + email + " has bookings.\n");
         }
         else { // row_counter = 0
-            System.out.println("Error: User with the email " + email + " does not exist.");
+            System.out.println("Error: User with the email " + email + " has no bookings.");
             return;
 		}
 		
 		// Movie Title, Show Date & Start Time, Theater Name, and Cinema Seat Number for all Bookings of a Given User
-		String updated_query = "SELECT M.title, B.bdatetime, T.tname, C.sno "
-					 + "FROM   Bookings B, Movies M, Theaters T, CinemaSeats C "
-					 + "WHERE  B.email = \'" + email + "\'";
+		String updated_query = "SELECT DISTINCT M.title, B.bdatetime, T.tname, C.sno "	// 
+							 + "FROM   Bookings B, Movies M, Shows S, Theaters T, CinemaSeats C, Plays P "
+							 + "WHERE  B.email = \'" + email + "\' "
+							 + "  AND  B.sid = S.sid AND S.mvid = M.mvid "
+							 + "  AND  P.sid = S.sid AND P.tid = T.tid "
+							 + "  AND  P.tid = C.tid;";
 		try {
 			esql.executeQueryAndPrintResult(updated_query);
 		} catch(Exception e) {
