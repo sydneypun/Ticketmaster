@@ -16,6 +16,7 @@ For phase 2 we created SQL queries.
 
 ## How to Run the Web Application: 
 ### Part 1: Install a Virtual Environment (Windows Users Instructions)
+0. `cd web_app`
 1. `python -m pip install --user virtualenv`
 2. `py -m venv env`
 3. `.\env\Scripts\activate`
