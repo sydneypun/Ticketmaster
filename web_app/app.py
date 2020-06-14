@@ -9,7 +9,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://vagrant:@127.0.0.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'hard'
 
-db = SQLAlchemy(app)
+from models import db
+#migrate = Migrate(app.db)
 
 bootstrap = Bootstrap(app)
 
@@ -46,4 +47,4 @@ def add_user():
     return render_template('new_user.html')
 
 # Adding booking 
-
+#@app.route()
