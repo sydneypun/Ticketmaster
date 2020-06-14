@@ -30,14 +30,14 @@ def page_not_found(e):
 def add_user(): 
     from models import user
     if request.method == 'POST': 
-        if not request.form['email'] or not request.form['fname'] or not request.form['lname'] or not request.form['phone'] or request.form['password']: 
+        if not request.form['email'] or not request.form['lname']  or not request.form['fname'] or not request.form['phone'] or request.form['password']: 
             flash('Please enter all the information')
-        elif(user.query.filter_by(email=request.form['email'].all() != []): 
+        elif(user.query.filter_by(email=request.form['email'].all() != [])): 
                 flash('A user account has already been created with this email! Please try again.')
                 return redirect(url_for('add_user'))
         else: 
             phone = "(" + request.form['phone'][0:3] + ")" + request.form['phone'][3:6] + "-" + request.form['phone'][6:10]
-            new_user = user(email=request.form['email'], fname=request.form['fname'], lname=request.form['lname'], phone=phone, password=request.form['password'])
+            new_user = user(email=request.form['email'], lname=request.form['fname'], fname=request.form['lname'], phone=phone, password=request.form['password'])
             db.session.add(new_user)
             db.session.commit()
             flash('Your account has successfully been created!')
