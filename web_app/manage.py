@@ -47,7 +47,7 @@ class user(db.Model):
 	email = db.Column(db.VARCHAR(64), primary_key=True, nullable=False)
     lname = db.Column(db.VARCHAR(32), nullable=False)  # Last name
     fname = db.Column(db.VARCHAR(32), nullable=False)   # First name
-    phone = db.Column(db.Integer)  
+    phone = db.Column(db.INTEGER)  
     pwd = db.Column(db.TEXT, nullable=False) # Password (should be hash instead of plain text)
 
 class shows (db.Model): 
@@ -62,53 +62,31 @@ class shows (db.Model):
 
 class bookings (db.Model): 
 	__tablename__ = 'bookings'
-    bid BIGINT NOT NULL,  -- Booking ID
-    status VARCHAR(16) NOT NULL,
-    bdatetime TIMESTAMPTZ NOT NULL,  -- Booking date and time
-    seats INTEGER NOT NULL,  -- Number of seats booked
-    sid BIGINT NOT NULL,  -- Show ID
-    email VARCHAR(64) NOT NULL,  -- User account
-    PRIMARY KEY(bid)
-    FOREIGN KEY(sid) REFERENCES Shows(sid),
-    FOREIGN KEY(email) REFERENCES Users(email)    
-);
+    bid = db.Column(db.BIGINT, nullable=False, primary_key=True) # Booking ID
+    status = db.Column(db.VARCHAR(16), nullable=False)
+    bdatetime = db.Column(db.TIMESTAMPTZ, nullable=False) # Booking date and time
+    seats = db.Column(db.INTEGER, nullable=False)  # Number of seats booked
+    sid = db.Column(db.BIGINT, nullable-False, db.ForeignKey('sid'))  # Show ID
+    email = db.Column(db.VARCHAR(64), nullable=False, db.ForeignKey('email')) # User account
 
-
-CREATE TABLE Payments (
+class payments (db.Model): 
 	__tablename__ = 'payments'
-    pid BIGINT NOT NULL,  -- Payment ID
-    bid BIGINT NOT NULL,  -- Booking ID
-    pmethod VARCHAR(32) NOT NULL,
-    pdatetime TIMESTAMPTZ NOT NULL,  -- Payment date and time
-    amount REAL NOT NULL,
-    trid BIGINT,  -- Transaction ID
-    PRIMARY KEY(pid),
-    FOREIGN KEY(bid) REFERENCES Bookings(bid),
-    UNIQUE(bid)  -- No two payments can have the same booking
-);
+    pid = db.Column(db.BIGINT, nullable=False, primary_key=True)   # Payment ID
+    bid = db.Column(db.BIGINT, nullable=False, db.ForeignKey('bid'), unique=True)   # Booking ID
+    pmethod = db.Column(db.VARCHAR(32), nullable=False) 
+    pdatetime = db.Column(db.TIMESTAMPTZ, nullable=False) # Payment date and time
+    amount = db.Column(db.REAL, nullable=False)
+    trid = db.Column(db.BIGINT)  # Transaction ID
 
-
-CREATE TABLE ShowSeats (
+class show_seats (db.Model): 
 	__tablename__ = 'show_seats'
-    ssid BIGINT NOT NULL,  -- Show seat ID
-    sid BIGINT NOT NULL,  -- Show ID
-    csid BIGINT NOT NULL, -- Cinema seat ID
-    bid BIGINT, -- Booking ID
-    price REAL NOT NULL,
-    PRIMARY KEY(ssid),
-    FOREIGN KEY(sid) REFERENCES Shows(sid),
-    FOREIGN KEY(csid) REFERENCES CinemaSeats(csid),
-    FOREIGN KEY(bid) REFERENCES Bookings(bid),
-    UNIQUE(sid, csid)  -- The same seat can only be booked once for the same show
+    ssid = db.Column(db.BIGINT, nullable=False, primary_key=True) # Show seat ID
+    sid = db.Column(db.BIGINT, nullable=False, db.ForeignKey('sid'), unique=True)  # Show ID
+    csid = db.Column(db.BIGINT, nullable=False, db.ForeignKey('csid'), unique=True) # Cinema seat ID
+    bid = db.Column(db.BIGINT, nullable=False, db.ForeignKey('bid'))  # Booking ID
+    price = db.Column(db.REAL, nullable=False) 
 
-);
-
-
-CREATE TABLE Plays (
+class plays (db.Model):
 	__tablename__ = 'plays'
-    sid BIGINT NOT NULL,  -- Show ID
-    tid BIGINT NOT NULL,  -- Theater ID
-    PRIMARY KEY(sid, tid),
-    FOREIGN KEY(sid) REFERENCES Shows(sid),
-    FOREIGN KEY(tid) REFERENCES Theaters(tid)
-)
+    sid = db.Column(db.BIGINT, nullable=False, primary_key=True, db.ForeignKey('sid'))  # Show ID
+    tid = db.Column(db.BIGINT, nullable=False, primary_key=True, db.ForeignKey('tid'))  # Theater ID

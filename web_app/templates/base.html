@@ -1,0 +1,101 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Ticketmaster{% endblock %}
+
+
+
+{% block head %}
+{{ super() }}
+<link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}" type="image/x-icon">
+<link rel="icon" href="{{ url_for('static', filename='icon.png') }}" type="image/x-icon">
+{% endblock %}
+
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">ST Ticketmaster Database</a>
+
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/new_user">New User</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li><a href="/add_booking">Add Booking</a> </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li><a href="/add_movie_showing">Add Movie Showing To Theater</a> </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li><a href="/cancel_pending_bookings">Cancel Pending Bookings</a> </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li><a href="/change_seats">Change Seats for Booking</a> </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+
+                <li><a href="/remove_payment">Remove Payment</a> </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li><a href="/clear_cancelled_bookings">Clear Cancelled Bookings</a> </li>
+            </ul>
+
+            <ul class="nav navbar-nav">
+                <li><a href="/remove_shows_on_date">Remove Shows On Date</a> </li>
+
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">List
+                    <span class="caret"></span> </a>
+                    <ul class="dropdown-menu">
+
+                        <li><a href="/list_theater/1">List Theater Playing Show</a> </li>
+
+                        <li><a href="/list_show_on_td/1">List Show Starting on Time and Date</a></li>
+
+                        <li><a href="/list_movie_love2010/1">List Movie Titles Containing Love Released After 2010</a> </li>
+
+                        <li><a href="/list_users_pending/1">List Users with Pending Booking</a></li>
+
+                        <li><a href="/list_movie_show_cinema_date/1">List Movie and Show Info at Cinema in Date Range</a> </li>
+
+                        <li><a href="/list_user_booking_info/1">List Booking Info For User</a> </li>
+
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+    {%  endfor %}
+    {% block page_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% endblock %}
