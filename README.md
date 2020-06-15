@@ -1,4 +1,8 @@
 # Ticketmaster
+
+## Synopsis: 
+A web application that supports specific functionality and queries for a Ticketmaster booking system.
+
 ## Team Potato Members: 
 ###### Thi Nguyen, 862051496
 ###### Sydney Pun, 862053259
