@@ -35,7 +35,7 @@ def add_user():
             flash('Please enter all the information')
         elif(user.query.filter_by(email=request.form['email'].all() != [])): 
                 flash('A user account has already been created with this email! Please try again.')
-                return redirect(url_for('add_user'))
+                return render_template(url_for('add_user'))
         else: 
             phone = "(" + request.form['phone'][0:3] + ")" + request.form['phone'][3:6] + "-" + request.form['phone'][6:10]
             new_user = user(email=request.form['email'], lname=request.form['fname'], fname=request.form['lname'], phone=phone, password=request.form['password'])
@@ -47,4 +47,7 @@ def add_user():
     return render_template('new_user.html')
 
 # Adding booking 
-#@app.route()
+@app.route('/add_booking', methods=['GET', 'POST'])
+def new_booking(): 
+    from models import bookings
+    return render_template('add_booking.html')

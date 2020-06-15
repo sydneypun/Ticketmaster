@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+
+{% block title %}Ticketmaster - Add Booking{% endblock %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Add booking</h1>
+
+</div>
+    <form class="form-inline" action="{{ request.path }}" method="post">
+        <div class="form-group">
+            <label class="sr-only" for="bid">Booking ID</label>
+            <input type="text" class="form-control" name="bid" placeholder="booking ID">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="status">Booking Status</label>
+            <input type="text" class="form-control" name="status" placeholder="booking status">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="bdatetime">Booking Date (mm/dd/yy) and time (hh:mm:ss AM/PM)</label>
+            <input type="number" class="form-control" name="bdatetime" placeholder="booking date and time">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="address">Number of Seats Booked</label>
+            <input type="number" class="form-control" name="address" placeholder="number of seats booked">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="address">Number of Seats Booked</label>
+            <input type="number" class="form-control" name="seats" placeholder="number of seats booked">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="address">Show ID</label>
+            <input type="text" class="form-control" name="sid" placeholder="show ID">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="address">Email</label>
+            <input type="text" class="form-control" name="sid" placeholder="email">
+        </div>
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}
