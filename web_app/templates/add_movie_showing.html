@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+
+{% block title %}Ticketmaster - Add Movie Showing To Theater{% endblock %}
+
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Add movie showing to theater</h1>
+
+</div>
+    <form class="form-inline" action="{{ request.path }}" method="post">
+        <div class="form-group">
+            <label class="sr-only" for="mvid">Movie ID</label>
+            <input type="text" class="form-control" name="mvid" placeholder="movie ID">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="title">Movie Title</label>
+            <input type="text" class="form-control" name="title" placeholder="movie title">
+
+        <div class="form-group">
+            <label class="sr-only" for="rdate">Release Data</label>
+            <input type="number" class="form-control" name="rdate" placeholder="release date">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="country">Release Country</label>
+            <input type="text" class="form-control" name="country" placeholder="release country">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="address">Description</label>
+            <input type="text" class="form-control" name="description" placeholder="description">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="duration">Duration</label>
+            <input type="text" class="form-control" name="duration" placeholder="duration">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="lang">Language Code (ie: en, de)</label>
+            <input type="text" class="form-control" name="lang" placeholder="language">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="genre">Genre</label>
+            <input type="text" class="form-control" name="genre" placeholder="genre">
+        </div>
+        
+        <div class="form-group">
+            <label class="sr-only" for="address">Show ID</label>
+            <input type="text" class="form-control" name="sid" placeholder="show ID">
+        </div>
+
+        <div class="form-group">
+            <label class="sr-only" for="address">Email</label>
+            <input type="text" class="form-control" name="sid" placeholder="email">
+        </div>
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

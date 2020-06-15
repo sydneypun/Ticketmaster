@@ -51,3 +51,9 @@ def add_user():
 def new_booking(): 
     from models import bookings
     return render_template('add_booking.html')
+
+# Adding movie showing
+@app.route('/add_movie_showing', methods=['GET', 'POST'])
+def new_movie_showing(): 
+    from models import movies
+    return render_template('add_movie_showing.html')
